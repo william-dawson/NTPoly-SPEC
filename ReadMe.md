@@ -40,12 +40,12 @@ driver, `InverseDriver`, which computes the inverse of a sparse matrix using
 Hotelling's method. The following input parameters should be passed:
 
 > --input followed by the name of the input matrix file.
-> --reference followed by the name of the reference result file.
 > --process_rows the process cube dimension in the row direction.
 > --process_columns the process cube dimension in the column direction.
 > --process_slices the process cube dimension in the slice direction.
 > --threshold for flushing small values to zero.
 > --converge for detecting convergence.
+> --loop_times how many times to convert the inverse.
 
 Note that the product of the process rows, columns, and slices must equal
 the total number of processes. Slices should be kept low, and only increased
@@ -57,8 +57,13 @@ with converge values of `1e-2`. Real world applications will likely use both
 of these values, with `1e-6` leading to more accurate, but more floating point
 intensive results.
 
-Input files and their corresponding reference files are in the `Benchmarks`
-directory. 
+Input files are in the `Benchmarks` directory. They are organized by the
+basis set used, with different basis sets having different sparsity. 
+
+The final parameter `loop_times` controls how many times the inverse is
+computed. In real world applications, we frequently need to compute the
+same function on many different matrices with similar structure. By increasing
+the loop_times, you can simulate this real workload.
 
 Citation
 --------------------------------------------------------------------------------

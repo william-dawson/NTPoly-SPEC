@@ -9,14 +9,13 @@ PROGRAM PremadeMatrixProgram
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
-       & DestructMatrix
-  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixNorm
+       & DestructMatrix, ConstructEmptyMatrix, FillMatrixIdentity
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
   CHARACTER(len=80) :: input_file
-  CHARACTER(len=80) :: reference_file
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold
   REAL(NTREAL) :: converge
@@ -32,6 +31,7 @@ PROGRAM PremadeMatrixProgram
   INTEGER :: counter
   INTEGER :: provided, ierr
   INTEGER :: rank
+  INTEGER :: II, loop_times
   REAL(NTREAL) :: error
 
   !! Setup MPI
@@ -45,8 +45,6 @@ PROGRAM PremadeMatrixProgram
      SELECT CASE(argument)
      CASE('--input')
         input_file = argument_value
-     CASE('--reference')
-        reference_file = argument_value
      CASE('--process_rows')
         READ(argument_value,*) process_rows
      CASE('--process_columns')
@@ -57,6 +55,8 @@ PROGRAM PremadeMatrixProgram
         READ(argument_value,*) threshold
      CASE('--converge')
         READ(argument_value,*) converge
+     CASE('--loop_times')
+        READ(argument_value,*) loop_times
      END SELECT
   END DO
 
@@ -67,33 +67,37 @@ PROGRAM PremadeMatrixProgram
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="input", value=input_file)
-  CALL WriteElement(key="reference", value=reference_file)
   CALL WriteElement(key="process_rows", value=process_rows)
   CALL WriteElement(key="process_columns", value=process_columns)
   CALL WriteElement(key="process_slices", value=process_slices)
   CALL WriteElement(key="threshold", value=threshold)
   CALL WriteElement(key="converge", value=converge)
+  CALL WriteElement(key="loop_times", value=loop_times)
   CALL ExitSubLog
 
   !! Read in the matrices from file.
   CALL ConstructMatrixFromMatrixMarket(Input, input_file)
-  CALL ConstructMatrixFromMatrixMarket(Reference, reference_file)
+  CALL ConstructEmptyMatrix(Reference, Input)
+  CALL FillMatrixIdentity(Reference)
 
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, Input%logical_matrix_dimension)
   solver_parameters = SolverParameters_t(&
        & converge_diff_in=converge, threshold_in=threshold, &
-       & BalancePermutation_in=permutation, be_verbose_in=.FALSE.)
+       & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
   !! Call the solver routine.
-  CALL Invert(Input, Result, solver_parameters)
+  !! Time this part.
+  DO II = 1, loop_times
+     CALL Invert(Input, Result, solver_parameters)
+  END DO
 
   !! Check The Answer
-  CALL IncrementMatrix(Result, Reference, alpha_in=-1.0_NTREAL, &
+  CALL MatrixMultiply(Input, Result, Reference, beta_in=-1.0_NTREAL, &
        & threshold_in=threshold)
-  error = MatrixNorm(Result)
+  error = MatrixNorm(Reference)
   CALL WriteElement(key="error", value=error)
-  IF (error .GT. converge) THEN
+  IF (error .GT. converge*10) THEN
      CALL MPI_Abort(MPI_COMM_WORLD, 1, ierr)
   END IF
 
