@@ -10,8 +10,9 @@ PROGRAM PremadeMatrixProgram
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & DestructMatrix, ConstructEmptyMatrix, FillMatrixIdentity
-  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, IncrementMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
@@ -23,8 +24,10 @@ PROGRAM PremadeMatrixProgram
   TYPE(Permutation_t) :: permutation
   !! Matrices
   TYPE(Matrix_ps) :: Input
+  TYPE(Matrix_ps) :: Identity
   TYPE(Matrix_ps) :: Result
   TYPE(Matrix_ps) :: Reference
+  TYPE(Matrix_ps) :: Temp
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -77,8 +80,8 @@ PROGRAM PremadeMatrixProgram
 
   !! Read in the matrices from file.
   CALL ConstructMatrixFromMatrixMarket(Input, input_file)
-  CALL ConstructEmptyMatrix(Reference, Input)
-  CALL FillMatrixIdentity(Reference)
+  CALL ConstructEmptyMatrix(Identity, Input)
+  CALL FillMatrixIdentity(Identity)
 
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, Input%logical_matrix_dimension)
@@ -89,12 +92,13 @@ PROGRAM PremadeMatrixProgram
   !! Call the solver routine.
   !! Time this part.
   DO II = 1, loop_times
-     CALL Invert(Input, Result, solver_parameters)
+     CALL InverseSquareRoot(Input, Result, solver_parameters)
   END DO
 
   !! Check The Answer
-  CALL MatrixMultiply(Input, Result, Reference, beta_in=-1.0_NTREAL, &
-       & threshold_in=threshold)
+  CALL MatrixMultiply(Input, Result, Temp, threshold_in=threshold)
+  CALL MatrixMultiply(Result, Temp, Reference, threshold_in=threshold)
+  CALL IncrementMatrix(Identity, Reference, alpha_in=-1.0_NTREAL)
   error = MatrixNorm(Reference)
   CALL WriteElement(key="error", value=error)
   IF (error .GT. converge*10) THEN
