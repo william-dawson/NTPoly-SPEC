@@ -69,6 +69,7 @@ endif()
 ################################################################################
 ## Get at the source files
 subdirs(Documentation)
+subdirs(Driver)
 subdirs(Source)
 
 if (NOT FORTRAN_ONLY)

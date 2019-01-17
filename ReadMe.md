@@ -1,22 +1,14 @@
 Project Overview
 ================================================================================
 
-[![Build Status](https://travis-ci.org/william-dawson/NTPoly.svg?branch=travis-ci)](https://travis-ci.org/william-dawson/NTPoly)
-
-NTPoly is a massively parallel library for computing the functions of sparse,
-symmetric matrices based on polynomial expansions. For sufficiently sparse
-matrices, most of the matrix functions in NTPoly can be computed in linear
-time.
+This project is a fork of the [NTPoly](https://github.com/william-dawson/NTPoly)
+code aimed at providing drivers and data for the
+[SPEC MPI Accelerator Benchmark Suite](https://www.spec.org/hpg/search/). Note
+that this ReadMe only contains the information relevant for benchmarking.
 
 Set Up Guide
 --------------------------------------------------------------------------------
-NTPoly is freely available and open source under the MIT license. It can be
-downloaded from the [Github](https://github.com/william-dawson/NTPoly)
-repository. We of course recommend that you download a
-[release version](https://github.com/william-dawson/NTPoly/releases)
-to get started.
-
-Installing NTPoly requires the following software:
+Installing NTPoly-SPEC suite requires the following software:
 
 * A Fortran Compiler.
 * An MPI Installation (MPI-3 Standard+).
@@ -25,104 +17,48 @@ Installing NTPoly requires the following software:
 The following optional software can greatly enhance the NTPoly experience:
 
 * BLAS: for multiplying dense matrices, if they emerge in the calculation.
-* A C++ Compiler for building C++ bindings.
-* Doxygen: for building documentation.
-* Python (Version 2.7+): for testing.
-* MPI4PY: for testing.
-* SciPy: for testing.
-* NumPy: for testing.
-* SWIG (Version 3.0+): for building the Python bindings.
 
-NTPoly uses CMake as a build system. First, take a look in the Targets
+NTPoly-SPEC uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of `.cmake` files which have example configurations
 on popular systems. You should copy one of these files, and create your own
 mymachine.cmake file. Then, cd into the Build directory, and type:
-> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..
+> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake -DFORTRAN_ONLY=YES ..
 
 There are a few options you can pass to CMake to modify the build. You can set
 `-DCMAKE_BUILD_TYPE=Debug` for debugging purposes. You can set the install
-directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. You can
-also set `-DFORTRAN_ONLY=YES` if you want to only build the Fortran interface.
-Note that with just the Fortran interface, it is not possible to perform local
-tests.
+directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. The flag
+`-DFORTRAN_ONLY=YES` is set because we only need the Fortran bindings for
+benchmarking.
 
 After that you can build using:
 > make
 
-And for the documentation:
-> make doc
-
-[Online documentation](https://william-dawson.github.io/NTPoly/documentation/) is also
-available. Further details about the library can be found on the
-[Wiki](https://github.com/william-dawson/NTPoly/wiki).
-If you aren't cross compiling, you can perform local tests using:
-> make test
-
-Basic Theory
+Driver Usage
 --------------------------------------------------------------------------------
-The theory of matrix functions is a long studied branch of matrix algebra.
-Matrix functions have a wide range of applications, including graph problems,
-differential equations, and materials science. Common examples of matrix
-functions include the matrix exponential:
+Drivers are to put into the `Driver` directory. Currently there is only one
+driver, `InverseDriver`, which computes the inverse of a sparse matrix using
+Hotelling's method. The following input parameters should be passed:
 
-> f(A) = e^A.
+> --input followed by the name of the input matrix file.
+> --reference followed by the name of the reference result file.
+> --process_rows the process cube dimension in the row direction.
+> --process_columns the process cube dimension in the column direction.
+> --process_slices the process cube dimension in the slice direction.
+> --threshold for flushing small values to zero.
+> --converge for detecting convergence.
 
-from the study of networks, or the inverse square root:
+Note that the product of the process rows, columns, and slices must equal
+the total number of processes. Slices should be kept low, and only increased
+when strong scaling degrades. For optimal performance, keep the number of
+rows and columns equal, or with one equal to two times the other.
 
-> f(A) = A^(-1/2)
+For benchmarking purposes, the threshold should be set to `1e-6` or `1e-5`
+with converge values of `1e-2`. Real world applications will likely use both
+of these values, with `1e-6` leading to more accurate, but more floating point
+intensive results.
 
-from quantum chemistry. NTPoly is a massively parallel library that can be used
-to compute a variety of matrix using polynomial expansions. Consider for example
-the Taylor series expansion of a function *f(x)* .
-
-> f(x) = f(0) + f'(0)x + f''(0)x^2/2! + ...
-
-We can imagine expanding this from the function of a single variable, to a
-function of a matrix:
-
-> f(A) = f(0) + f'(0)A + f''(0)A^2/2! + ...
-
-where matrices can be summed using matrix addition, and raised to a power
-using matrix multiplication. At the heart of NTPoly are polynomial expansions
-like this. We implement not only Taylor expansions, but also Chebyshev
-polynomial expansions, and other specialized expansions based on the function
-of interest.
-
-When the input matrix *A* and the output matrix *f(A)* are sparse, we can
-replace the dense matrix addition and multiplication routines with sparse
-matrix routines. This allows us to use NTPoly to efficiently compute many
-functions of sparse matrices.
-
-Getting Start With Examples
---------------------------------------------------------------------------------
-In the examples directory, there are a number of different example programs that
-use NTPoly. You can check the ReadMe.md file in each example directory to
-learn how to build and run each example. The simplest example is PremadeMatrix,
-which includes sample output you can compare to.
-
-Feature Outline
---------------------------------------------------------------------------------
-The following features and methods have been implemented in NTPoly:
-
-* General Polynomials
-    * Standard Polynomials
-    * Chebyshev Polynomials
-    * Hermite Polynomials
-* Transcendental Functions
-    * Trigonometric Functions
-    * Exponential and Logarithm
-* Matrix Roots
-    * Square Root and Inverse Square Root
-    * Matrix *p* th Root
-* Quantum Chemistry
-    * Density Matrix Purification
-    * Chemical Potential Calculation
-    * Geometry Optimization
-* Other
-    * Matrix Inverse/Moore-Penrose Pseudo Inverse
-    * Sign Function/Polar Decomposition
-    * Load Balancing Matrices
-    * File I/O
+Input files and their corresponding reference files are in the `Benchmarks`
+directory. 
 
 Citation
 --------------------------------------------------------------------------------
@@ -133,12 +69,3 @@ Computer Physics Communications paper:
 > function calculations with NTPoly." Computer Physics Communications (2017).
 
 Please cite this paper in accordance to the practices in your field.
-
-How To Contribute
---------------------------------------------------------------------------------
-To begin contributing to NTPoly, take a look at the
-[Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The
-[Contributing Guide](https://github.com/william-dawson/NTPoly/blob/master/CONTRIBUTING.md)
-provides an overview of best development practices. Additionally, there is a
-[Adding New Functionality](https://github.com/william-dawson/NTPoly/wiki/Adding-New-Functionality-(Example))
-page which documents how one would go about adding a matrix function to NTPoly.
