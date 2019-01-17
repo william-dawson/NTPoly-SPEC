@@ -15,11 +15,12 @@ PROGRAM PremadeMatrixProgram
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
+  REAL(NTREAL), PARAMETER :: checkval = 5e-2_NTREAL
+  REAL(NTREAL), PARAMETER :: converge = 1e-5_NTREAL
   !! Variables for handling input parameters.
   CHARACTER(len=80) :: input_file
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold
-  REAL(NTREAL) :: converge
   TYPE(SolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
   !! Matrices
@@ -56,8 +57,6 @@ PROGRAM PremadeMatrixProgram
         READ(argument_value,*) process_slices
      CASE('--threshold')
         READ(argument_value,*) threshold
-     CASE('--converge')
-        READ(argument_value,*) converge
      CASE('--loop_times')
         READ(argument_value,*) loop_times
      END SELECT
@@ -74,7 +73,6 @@ PROGRAM PremadeMatrixProgram
   CALL WriteElement(key="process_columns", value=process_columns)
   CALL WriteElement(key="process_slices", value=process_slices)
   CALL WriteElement(key="threshold", value=threshold)
-  CALL WriteElement(key="converge", value=converge)
   CALL WriteElement(key="loop_times", value=loop_times)
   CALL ExitSubLog
 
@@ -101,7 +99,7 @@ PROGRAM PremadeMatrixProgram
   CALL IncrementMatrix(Identity, Reference, alpha_in=-1.0_NTREAL)
   error = MatrixNorm(Reference)
   CALL WriteElement(key="error", value=error)
-  IF (error .GT. converge*10) THEN
+  IF (error .GT. checkval) THEN
      CALL MPI_Abort(MPI_COMM_WORLD, 1, ierr)
   END IF
 

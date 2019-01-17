@@ -44,7 +44,6 @@ Hotelling's method. The following input parameters should be passed:
 > --process_columns the process cube dimension in the column direction.
 > --process_slices the process cube dimension in the slice direction.
 > --threshold for flushing small values to zero.
-> --converge for detecting convergence.
 > --loop_times how many times to convert the inverse.
 
 Note that the product of the process rows, columns, and slices must equal
@@ -52,10 +51,9 @@ the total number of processes. Slices should be kept low, and only increased
 when strong scaling degrades. For optimal performance, keep the number of
 rows and columns equal, or with one equal to two times the other.
 
-For benchmarking purposes, the threshold should be set to `1e-6`
-with converge values of `1e-2`. Input files are in the `Benchmarks` directory.
-They are organized by the basis set used, with different basis sets having
-different sparsity.
+For benchmarking purposes, the threshold should be set to `1e-5` or
+`1e-6`. A smaller values will lead to denser matrices and longer compute
+times. Input files are in the `Benchmarks` directory.
 
 The final parameter `loop_times` controls how many times the inverse is
 computed. In real world applications, we frequently need to compute the
