@@ -52,13 +52,10 @@ the total number of processes. Slices should be kept low, and only increased
 when strong scaling degrades. For optimal performance, keep the number of
 rows and columns equal, or with one equal to two times the other.
 
-For benchmarking purposes, the threshold should be set to `1e-6` or `1e-5`
-with converge values of `1e-2`. Real world applications will likely use both
-of these values, with `1e-6` leading to more accurate, but more floating point
-intensive results.
-
-Input files are in the `Benchmarks` directory. They are organized by the
-basis set used, with different basis sets having different sparsity. 
+For benchmarking purposes, the threshold should be set to `1e-6`
+with converge values of `1e-2`. Input files are in the `Benchmarks` directory.
+They are organized by the basis set used, with different basis sets having
+different sparsity.
 
 The final parameter `loop_times` controls how many times the inverse is
 computed. In real world applications, we frequently need to compute the
