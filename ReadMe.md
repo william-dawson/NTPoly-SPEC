@@ -41,10 +41,15 @@ driver, `InverseDriver`, which computes the inverse of a sparse matrix.
 The following input parameters should be passed to this driver:
 
 > --input followed by the name of the input matrix file.
+
 > --process_rows the process cube dimension in the row direction.
+
 > --process_columns the process cube dimension in the column direction.
+
 > --process_slices the process cube dimension in the slice direction.
+
 > --threshold for flushing small values to zero.
+
 > --loop_times how many times to convert the inverse.
 
 Note that the product of the process rows, columns, and slices must equal
