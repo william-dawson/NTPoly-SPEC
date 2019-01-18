@@ -383,7 +383,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromMatrixMarket(this, file_name, global_grid)
     ELSE
-       CALL ConstructError(err, process_grid_in%global_comm)
+       CALL ConstructError(err)
        !! Setup Involves Just The Root Opening And Reading Parameter Data
        CALL StartTimer("MPI Read Text")
        CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
@@ -585,7 +585,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
-       CALL ConstructError(err, process_grid_in%global_comm)
+       CALL ConstructError(err)
        CALL StartTimer("MPI Read Binary")
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
