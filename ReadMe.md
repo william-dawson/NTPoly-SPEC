@@ -28,7 +28,8 @@ There are a few options you can pass to CMake to modify the build. You can set
 `-DCMAKE_BUILD_TYPE=Debug` for debugging purposes. You can set the install
 directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. The flag
 `-DFORTRAN_ONLY=YES` is set because we only need the Fortran bindings for
-benchmarking.
+benchmarking. You can set the flag `-DNOIALLGATHER=Yes` if your MPI implementation
+does not have nonblocking collectives.
 
 After that you can build using:
 > make
@@ -59,6 +60,12 @@ The final parameter `loop_times` controls how many times the inverse is
 computed. In real world applications, we frequently need to compute the
 same function on many different matrices with similar structure. By increasing
 the loop_times, you can simulate this type of workload.
+
+Example run:
+> mpirun -np 4 ./bin/InverseDriver \
+> --input ../Benchmarks/004.xyz-input631G.in.mtx  \
+> --process_rows 2 --process_columns 2 --process_slices 1 \
+> --threshold 1e-6 --loop_times 1
 
 Citation
 --------------------------------------------------------------------------------
