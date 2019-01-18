@@ -36,8 +36,8 @@ After that you can build using:
 Driver Usage
 --------------------------------------------------------------------------------
 Drivers are to put into the `Driver` directory. Currently there is only one
-driver, `InverseDriver`, which computes the inverse of a sparse matrix using
-Hotelling's method. The following input parameters should be passed:
+driver, `InverseDriver`, which computes the inverse of a sparse matrix.
+The following input parameters should be passed to this driver:
 
 > --input followed by the name of the input matrix file.
 > --process_rows the process cube dimension in the row direction.
@@ -58,7 +58,7 @@ times. Input files are in the `Benchmarks` directory.
 The final parameter `loop_times` controls how many times the inverse is
 computed. In real world applications, we frequently need to compute the
 same function on many different matrices with similar structure. By increasing
-the loop_times, you can simulate this real workload.
+the loop_times, you can simulate this type of workload.
 
 Citation
 --------------------------------------------------------------------------------
