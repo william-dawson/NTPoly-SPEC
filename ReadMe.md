@@ -67,10 +67,7 @@ same function on many different matrices with similar structure. By increasing
 the loop_times, you can simulate this type of workload.
 
 Example run:
-> mpirun -np 4 ./bin/InverseDriver \
-> --input ../Benchmarks/004.xyz-input631G.in.mtx  \
-> --process_rows 2 --process_columns 2 --process_slices 1 \
-> --threshold 1e-6 --loop_times 1
+> mpirun -np 4 ./bin/InverseDriver --input ../Benchmarks/004.xyz-input631G.in.mtx --process_rows 2 --process_columns 2 --process_slices 1 --threshold 1e-6 --loop_times 1
 
 Citation
 --------------------------------------------------------------------------------
