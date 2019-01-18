@@ -170,12 +170,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              WRITE(*,*) "Of type: mpi error."
              CALL MPI_Error_String(this%mpi_error,error_string,error_string_len, &
                   & error_string_error)
-             WRITE(*,*) error_string
+             WRITE(*,*) TRIM(error_string)
           ELSE
              WRITE(*,*) "Of type: generic error."
           END IF
           WRITE(*,*) "Details:"
-          WRITE(*,*) this%error_description
+          WRITE(*,*) "  ", TRIM(this%error_description)
        END IF
     ELSE
        CALL SetGenericError(temp_error, &
