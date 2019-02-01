@@ -19,7 +19,6 @@ PROGRAM PremadeMatrixProgram
   REAL(NTREAL), PARAMETER :: converge = 1e-5_NTREAL
   !! Variables for handling input parameters.
   CHARACTER(len=80) :: input_file
-  INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold
   TYPE(SolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
@@ -49,12 +48,6 @@ PROGRAM PremadeMatrixProgram
      SELECT CASE(argument)
      CASE('--input')
         input_file = argument_value
-     CASE('--process_rows')
-        READ(argument_value,*) process_rows
-     CASE('--process_columns')
-        READ(argument_value,*) process_columns
-     CASE('--process_slices')
-        READ(argument_value,*) process_slices
      CASE('--threshold')
         READ(argument_value,*) threshold
      CASE('--loop_times')
@@ -63,15 +56,11 @@ PROGRAM PremadeMatrixProgram
   END DO
 
   !! Setup the process grid.
-  CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
-       & process_slices)
+  CALL ConstructProcessGrid(MPI_COMM_WORLD)
 
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="input", value=input_file)
-  CALL WriteElement(key="process_rows", value=process_rows)
-  CALL WriteElement(key="process_columns", value=process_columns)
-  CALL WriteElement(key="process_slices", value=process_slices)
   CALL WriteElement(key="threshold", value=threshold)
   CALL WriteElement(key="loop_times", value=loop_times)
   CALL ExitSubLog
