@@ -42,20 +42,9 @@ The following input parameters should be passed to this driver:
 
 > --input followed by the name of the input matrix file.
 
-> --process_rows the process cube dimension in the row direction.
-
-> --process_columns the process cube dimension in the column direction.
-
-> --process_slices the process cube dimension in the slice direction.
-
 > --threshold for flushing small values to zero.
 
 > --loop_times how many times to convert the inverse.
-
-Note that the product of the process rows, columns, and slices must equal
-the total number of processes. Slices should be kept low, and only increased
-when strong scaling degrades. For optimal performance, keep the number of
-rows and columns equal, or with one equal to two times the other.
 
 For benchmarking purposes, the threshold should be set to `1e-5` or
 `1e-6`. A smaller values will lead to denser matrices and longer compute
@@ -67,7 +56,7 @@ same function on many different matrices with similar structure. By increasing
 the loop_times, you can simulate this type of workload.
 
 Example run:
-> mpirun -np 4 ./bin/InverseDriver --input ../Benchmarks/004.xyz-input631G.in.mtx --process_rows 2 --process_columns 2 --process_slices 1 --threshold 1e-6 --loop_times 1
+> mpirun -np 4 ./bin/InverseDriver --input ../Benchmarks/004.xyz-input631G.in.mtx --threshold 1e-6 --loop_times 1
 
 Citation
 --------------------------------------------------------------------------------
