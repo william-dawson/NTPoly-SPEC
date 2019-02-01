@@ -6,7 +6,7 @@ set(CMAKE_Fortran_COMPILER mpifrtpx)
 set(CMAKE_CXX_COMPILER mpiFCCpx)
 SET(CMAKE_Fortran_MODDIR_FLAG "-M")
 
-set(TOOLCHAIN_LIBS "")
+set(TOOLCHAIN_LIBS "-Kopenmp -lfjscalapack -lfjlapackex")
 
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE
