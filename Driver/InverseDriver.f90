@@ -13,6 +13,7 @@ PROGRAM PremadeMatrixProgram
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, IncrementMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   REAL(NTREAL), PARAMETER :: checkval = 5e-2_NTREAL
@@ -58,6 +59,8 @@ PROGRAM PremadeMatrixProgram
   !! Setup the process grid.
   CALL ConstructProcessGrid(MPI_COMM_WORLD)
 
+  CALL RegisterTimer("Loop")
+
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="input", value=input_file)
@@ -78,9 +81,11 @@ PROGRAM PremadeMatrixProgram
 
   !! Call the solver routine.
   !! Time this part.
+  CALL StartTimer("Loop")
   DO II = 1, loop_times
      CALL InverseSquareRoot(Input, Result, solver_parameters)
   END DO
+  CALL StopTimer("Loop")
 
   !! Check The Answer
   CALL MatrixMultiply(Input, Result, Temp, threshold_in=threshold)
@@ -91,6 +96,8 @@ PROGRAM PremadeMatrixProgram
   IF (error .GT. checkval) THEN
      CALL MPI_Abort(MPI_COMM_WORLD, 1, ierr)
   END IF
+
+  CALL PrintAllTimersDistributed()
 
   !! Cleanup
   CALL DestructMatrix(Input)
