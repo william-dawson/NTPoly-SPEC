@@ -318,7 +318,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ComputeNumSlices(total_processors, process_slices)
     END IF
-    WRITE(*,*) "COMPUTED NUMBER OF SLICES", process_slices
 
     !! Create a 3D grid
     CALL ComputeGridSize(total_processors, process_slices, process_rows, &
@@ -632,8 +631,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeGridSize
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Pick an appropriate number of process slices for this calculation.
-  !> This routine will focus on whether we can make a square slice grid,
-  !> which gives pretty ideal performance.
+  !> This routine will focus on whether we can make a valid process grid with
+  !> several slices. 
   SUBROUTINE ComputeNumSlices(total_processors, slices)
     !> Total processors in the grid.
     INTEGER, INTENT(IN) :: total_processors
@@ -644,14 +643,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: slice_dim
     LOGICAL :: found
 
-    !! Try manually values [4, 3, 2]. If they don't work, give up and use 1.
+    !! Try manually values [4, 3, 2]. If they do not work, give up and use 1.
     found = .FALSE.
     DO slices = MIN(4, total_processors), 2, -1
        slice_size = total_processors / slices
        IF (slice_size * slices .NE. total_processors) CYCLE
-       
+
+       !! First try a square grid.
        slice_dim  = FLOOR(SQRT(REAL(slice_size)))
        IF (slice_dim*slice_dim .EQ. slice_size) THEN
+          FOUND = .TRUE.
+          EXIT
+       END IF
+
+       !! If not, we try a grid where the rows are twice the number of columns.
+       slice_dim = FLOOR(SQRT(REAL(slice_size/2)))
+       IF (slice_dim*slice_dim*2 .EQ. slice_size) THEN
           FOUND = .TRUE.
           EXIT
        END IF
