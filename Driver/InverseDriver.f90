@@ -9,7 +9,8 @@ PROGRAM PremadeMatrixProgram
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
-       & DestructMatrix, ConstructEmptyMatrix, FillMatrixIdentity
+       & DestructMatrix, ConstructEmptyMatrix, FillMatrixIdentity, &
+       & CopyMatrix
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, IncrementMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
@@ -27,7 +28,7 @@ PROGRAM PremadeMatrixProgram
   TYPE(Matrix_ps) :: Identity
   TYPE(Matrix_ps) :: Result
   TYPE(Matrix_ps) :: Reference
-  TYPE(Matrix_ps) :: Temp
+  TYPE(Matrix_ps) :: Input2
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -76,15 +77,17 @@ PROGRAM PremadeMatrixProgram
        & converge_diff_in=converge, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
+  !! Square the matrix to make it denser
+  CALL MatrixMultiply(Input, Input, Input2, threshold_in=threshold)
+
   !! Call the solver routine.
   !! Time this part.
   DO II = 1, loop_times
-     CALL InverseSquareRoot(Input, Result, solver_parameters)
+     CALL InverseSquareRoot(Input2, Result, solver_parameters)
   END DO
 
   !! Check The Answer
-  CALL MatrixMultiply(Input, Result, Temp, threshold_in=threshold)
-  CALL MatrixMultiply(Result, Temp, Reference, threshold_in=threshold)
+  CALL MatrixMultiply(Input, Result, Reference, threshold_in=threshold)
   CALL IncrementMatrix(Identity, Reference, alpha_in=-1.0_NTREAL)
   error = MatrixNorm(Reference)
   CALL WriteElement(key="error", value=error)
@@ -94,6 +97,7 @@ PROGRAM PremadeMatrixProgram
 
   !! Cleanup
   CALL DestructMatrix(Input)
+  CALL DestructMatrix(Input2)
   CALL DestructMatrix(Reference)
   CALL DestructMatrix(Result)
   CALL DestructProcessGrid
