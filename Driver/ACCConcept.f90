@@ -18,7 +18,7 @@ PROGRAM PremadeMatrixProgram
   CHARACTER(len=80) :: filea, fileb, argv
   INTEGER :: number_of_blocks
   REAL(NTREAL) :: normval
-  REAL :: stime, ftime
+  DOUBLE PRECISION :: stime, ftime
 
   !! Read in the matrices from file.
   CALL get_command_argument(1, filea)
