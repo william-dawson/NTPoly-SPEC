@@ -58,12 +58,12 @@ PROGRAM PremadeMatrixProgram
   !! Setup the process grid.
   CALL ConstructProcessGrid(MPI_COMM_WORLD)
 
-  CALL WriteHeader("Command Line Parameters")
-  CALL EnterSubLog
-  CALL WriteElement(key="input", value=input_file)
-  CALL WriteElement(key="threshold", value=threshold)
-  CALL WriteElement(key="loop_times", value=loop_times)
-  CALL ExitSubLog
+  !CALL WriteHeader("Command Line Parameters")
+  !CALL EnterSubLog
+  !CALL WriteElement(key="input", value=input_file)
+  !CALL WriteElement(key="threshold", value=threshold)
+  !CALL WriteElement(key="loop_times", value=loop_times)
+  !CALL ExitSubLog
 
   !! Read in the matrices from file.
   CALL ConstructMatrixFromMatrixMarket(Input, input_file)
@@ -74,7 +74,7 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructRandomPermutation(permutation, Input%logical_matrix_dimension)
   solver_parameters = SolverParameters_t(&
        & converge_diff_in=converge, threshold_in=threshold, &
-       & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
+       & BalancePermutation_in=permutation, be_verbose_in=.FALSE.)
 
   !! Call the solver routine.
   !! Time this part.
@@ -87,7 +87,7 @@ PROGRAM PremadeMatrixProgram
   CALL MatrixMultiply(Result, Temp, Reference, threshold_in=threshold)
   CALL IncrementMatrix(Identity, Reference, alpha_in=-1.0_NTREAL)
   error = MatrixNorm(Reference)
-  CALL WriteElement(key="error", value=error)
+  !CALL WriteElement(key="error", value=error)
   IF (error .GT. checkval) THEN
      CALL MPI_Abort(MPI_COMM_WORLD, 1, ierr)
   END IF

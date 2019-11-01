@@ -4,6 +4,7 @@
 !! Mainly you'll want to look in the subroutine MultiplyLoop unless you want
 !! to start modifying the blocking.
 PROGRAM PremadeMatrixProgram
+  USE omp_lib, ONLY : omp_get_wtime
   USE DataTypesModule, ONLY : NTREAL
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool
@@ -67,7 +68,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ
 
     !! Split the matrices into blocks.
-    CALL CPU_TIME(stime)
+    stime = omp_get_wtime()
     ALLOCATE(mata_split(num_blocks,1))
     ALLOCATE(matb_split(1,num_blocks))
     ALLOCATE(mata_split_t(num_blocks,1))
@@ -85,14 +86,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(matc, mata%rows, matb%columns, zero_in=.TRUE.)
     CALL SplitMatrix(matc, num_blocks, num_blocks, matc_split)
 
-    CALL CPU_TIME(ftime)
+    ftime = omp_get_wtime()
     WRITE(*,*) "Split overhead time:", ftime - stime
 
     !! Allocate the memory pool.
-    CALL CPU_TIME(stime)
+    stime = omp_get_wtime()
     ALLOCATE(mpool(num_blocks, num_blocks))
     CALL BuildMemoryPool(matc_split, mpool)
-    CALL CPU_TIME(ftime)
+    ftime = omp_get_wtime()
     WRITE(*,*) "Memory pool allocation time:", ftime - stime
 
     !! Multiply.
@@ -100,9 +101,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & mpool)
 
     !! Merge the matrix C
-    CALL CPU_TIME(stime)
+    stime = omp_get_wtime()
     CALL ComposeMatrix(matc_split, num_blocks, num_blocks, matc)
-    CALL CPU_TIME(ftime)
+    ftime = omp_get_wtime()
     WRITE(*,*) "Merge overhead time:", ftime - stime
 
     !! Cleanup
@@ -146,9 +147,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr), DIMENSION(:,:), INTENT(INOUT), TARGET :: pool
     INTEGER :: II, JJ
 
-    CALL CPU_TIME(stime)
-    !$OMP PARALLEL PRIVATE(JJ)
-    !$OMP DO
+    stime = omp_get_wtime()
+    !$OMP PARALLEL DO COLLAPSE(2)
     DO II = 1, num_blocks
        DO JJ = 1, num_blocks
           CALL MatrixMultiply(mata(II,1), matb(1,JJ), matc(II,JJ), &
@@ -156,9 +156,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & threshold_in=1e-6_NTREAL, blocked_memory_pool_in=pool(II,JJ))
        END DO
     END DO
-    !$OMP END DO
-    !$OMP END PARALLEL
-    CALL CPU_TIME(ftime)
+    !$OMP END PARALLEL DO
+    ftime = omp_get_wtime()
     WRITE(*,*) "Loop time:", ftime - stime
   END SUBROUTINE MultiplyLoop
 END PROGRAM PremadeMatrixProgram
