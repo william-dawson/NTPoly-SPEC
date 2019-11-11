@@ -16,7 +16,8 @@ PROGRAM PremadeMatrixProgram
   USE MPI
   IMPLICIT NONE
   REAL(NTREAL), PARAMETER :: checkval = 5e-2_NTREAL
-  REAL(NTREAL), PARAMETER :: converge = 1e-5_NTREAL
+  REAL(NTREAL), PARAMETER :: converge = 0_NTREAL
+  INTEGER, PARAMETER :: NSTEPS = 30
   !! Variables for handling input parameters.
   CHARACTER(len=80) :: input_file
   REAL(NTREAL) :: threshold
@@ -74,7 +75,8 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructRandomPermutation(permutation, Input%logical_matrix_dimension)
   solver_parameters = SolverParameters_t(&
        & converge_diff_in=converge, threshold_in=threshold, &
-       & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
+       & BalancePermutation_in=permutation, be_verbose_in=.TRUE., &
+       & max_iterations_in=NSTEPS)
 
   !! Call the solver routine.
   !! Time this part.
